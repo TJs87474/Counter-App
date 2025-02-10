@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatefulWidget  {
   const MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -54,9 +54,32 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _counter = 0;
   bool _isFirstImage = true; // Boolean to track the image state
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+ void initState() {
+
+_animationController = AnimationController(
+  duration: const Duration(milliseconds: 500),
+  vsync: this,
+  );
+
+  _animation = CurvedAnimation(
+    parent: _animationController, 
+    curve: Curves.easeInOut
+    );
+    _animationController.value = 1.0;
+ }
+
+  @override
+   void dispose() {
+     _animationController.dispose(); // Dispose of the animation controller
+     super.dispose();
+   }
 
   void _incrementCounter() {
     setState(() {
@@ -69,11 +92,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void toggleImage() {
+  void _toggleImage() {
     setState(() {
       _isFirstImage = !_isFirstImage; // Toggle between true and false
     });
+
+  _animationController.forward(from: 0.0);
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -97,27 +124,35 @@ class _MyHomePageState extends State<MyHomePage> {
   child: Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: <Widget>[
-      Image.asset(
+      FadeTransition(
+      opacity: _animation,
+      child: Image.asset(
               _isFirstImage ? 'assets/images/1.jpeg' : 'assets/images/2.jpeg',
+              key: ValueKey<bool>(_isFirstImage),
         height: 200,
         fit: BoxFit.cover,
+       ),
       ),
-      const SizedBox(height: 20), // Adds spacing between image and text
-      const Text(
-        'You have pushed the button this many times:',
-      ),
+      const SizedBox(height: 20), 
+
       ElevatedButton(
   style: ElevatedButton.styleFrom(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      //borderRadius: BorderRadius.zero, //Rectangular border
     ),
   ),
-  onPressed: toggleImage ,
-  child: const Text(
+  onPressed: _toggleImage ,
+  
+  child: 
+  const Text(
     'Toggle Image',
   ),
 ),
+
+      const Text(
+        'You have pushed the button this many times:',
+      ),
+
       Text(
         '$_counter',
         style: Theme.of(context).textTheme.headlineMedium,
